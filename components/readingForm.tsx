@@ -156,8 +156,17 @@ export function ReadingForm() {
               <FormControl>
                 <Input
                   type="number"
-                  {...field}
-                  value={typeof field.value === "number" ? field.value : ""}
+                  value={
+                    typeof field.value === "number" ||
+                    typeof field.value === "string"
+                      ? field.value
+                      : ""
+                  }
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : Number(e.target.value)
+                    )
+                  }
                 />
               </FormControl>
               <FormMessage />
@@ -173,8 +182,17 @@ export function ReadingForm() {
               <FormControl>
                 <Input
                   type="number"
-                  {...field}
-                  value={typeof field.value === "number" ? field.value : ""}
+                  value={
+                    typeof field.value === "number" ||
+                    typeof field.value === "string"
+                      ? field.value
+                      : ""
+                  }
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : Number(e.target.value)
+                    )
+                  }
                 />
               </FormControl>
               <FormMessage />
