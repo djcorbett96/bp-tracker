@@ -16,19 +16,13 @@ export async function addReading(reading: Reading) {
   console.log("database", database);
   const sql = neon(database);
 
-  const tx = await sql.begin();
+  await sql.transaction((tx) => [
+    tx`INSERT INTO readings (date, time, systolic, diastolic) VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`,
+  ]);
 
-  try {
-    await tx`INSERT INTO readings (date, time, systolic, diastolic) VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`;
-
-    await tx.commit();
-    console.log(
-      `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
-    );
-  } catch (error) {
-    await tx.rollback();
-    console.error("Failed to add reading", error);
-  }
+  console.log(
+    `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
+  );
 }
 
 export async function getReadings({
