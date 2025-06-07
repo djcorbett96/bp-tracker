@@ -18,7 +18,7 @@ export default async function Page() {
       <h1 className="text-center text-2xl font-bold mb-4">
         Historical Readings
       </h1>
-      <DataTable columns={columns} data={readings} />
+      <DataTable columns={columns as any} data={readings as any[]} />
     </div>
   );
 }

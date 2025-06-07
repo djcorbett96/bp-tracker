@@ -90,7 +90,7 @@ export function ReadingForm() {
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "P")
+                        format(field.value as Date, "P")
                       ) : (
                         <span>04/03/1996</span>
                       )}
@@ -101,7 +101,7 @@ export function ReadingForm() {
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value}
+                    selected={field.value as Date | undefined}
                     onSelect={field.onChange}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
@@ -154,7 +154,11 @@ export function ReadingForm() {
             <FormItem>
               <FormLabel>Systolic</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input
+                  type="number"
+                  {...field}
+                  value={typeof field.value === "number" ? field.value : ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -167,7 +171,11 @@ export function ReadingForm() {
             <FormItem>
               <FormLabel>Diastolic</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input
+                  type="number"
+                  {...field}
+                  value={typeof field.value === "number" ? field.value : ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

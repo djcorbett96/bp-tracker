@@ -11,7 +11,18 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export function ReadingsLineChart({ data }) {
+interface Reading {
+  date: string;
+  time: string;
+  systolic: number;
+  diastolic: number;
+}
+
+interface ReadingsLineChartProps {
+  data: Reading[];
+}
+
+export function ReadingsLineChart({ data }: ReadingsLineChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data}>

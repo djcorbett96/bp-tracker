@@ -10,7 +10,7 @@ type Reading = {
   diastolic: number;
 };
 
-const database = process.env.DATABASE_URL_PROD;
+const database = process.env.DATABASE_URL_PROD || "";
 
 export async function addReading(reading: Reading) {
   const sql = neon(database);

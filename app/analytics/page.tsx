@@ -65,7 +65,14 @@ export default async function AnalyticsPage() {
         </div>
 
         <div className="flex w-full lg:w-2/3">
-          <ReadingsLineChart data={chartData} />
+          <ReadingsLineChart
+            data={chartData.map((row: any) => ({
+              date: row.date,
+              time: row.time,
+              systolic: Number(row.systolic),
+              diastolic: Number(row.diastolic),
+            }))}
+          />
         </div>
       </div>
     </div>

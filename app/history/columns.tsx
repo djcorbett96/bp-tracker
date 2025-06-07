@@ -14,9 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { deleteReading } from "../actions";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-export type Reading = {
+type Reading = {
   id: number;
   date: string;
   time: string;
