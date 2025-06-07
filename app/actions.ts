@@ -13,11 +13,10 @@ type Reading = {
 
 const database = process.env.DATABASE_URL_PROD || "";
 const pool = new Pool({ connectionString: database! });
+const client = await pool.connect();
 
 export async function addReading(reading: Reading) {
   console.log("database", process.env.DATABASE_URL);
-
-  const client = await pool.connect();
 
   try {
     await client.query(
