@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getLast10Averages, getReadingsForChart } from "@/app/actions";
 import { ReadingsLineChart } from "@/components/readingsLineChart";
 import { Button } from "@/components/ui/button";

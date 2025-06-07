@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getReadings } from "@/app/actions";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
