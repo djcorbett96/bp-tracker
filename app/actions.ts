@@ -80,9 +80,8 @@ export async function getLast10Averages(timeOfDay: "AM" | "PM") {
 }
 
 export async function getReadingsForChart() {
-  const sql = neon(database);
-
-  const readings = await sql`
+  const { rows } = await pool.query(
+    `
       SELECT
         date,
         time,
@@ -91,7 +90,8 @@ export async function getReadingsForChart() {
       FROM readings
       ORDER BY date ASC
       LIMIT 100
-    `;
+      `
+  );
 
-  return readings;
+  return rows;
 }
