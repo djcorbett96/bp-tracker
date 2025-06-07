@@ -16,9 +16,8 @@ export async function addReading(reading: Reading) {
   console.log("database", database);
   const sql = neon(database);
 
-  await sql.transaction((tx) => [
-    tx`INSERT INTO readings (date, time, systolic, diastolic) VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`,
-  ]);
+  await sql`INSERT INTO readings (date, time, systolic, diastolic)
+      VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`;
 
   console.log(
     `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
