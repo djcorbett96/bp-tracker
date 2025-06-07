@@ -1,7 +1,6 @@
 "use server";
 
 import { Pool } from "@neondatabase/serverless";
-
 import { revalidatePath } from "next/cache";
 
 type Reading = {
@@ -13,15 +12,12 @@ type Reading = {
 
 const database = process.env.DATABASE_URL_PROD || "";
 const pool = new Pool({ connectionString: database! });
-const client = await pool.connect();
 
 export async function addReading(reading: Reading) {
-  console.log("database", process.env.DATABASE_URL);
-
   try {
-    await client.query(
+    await pool.query(
       `INSERT INTO readings (date, time, systolic, diastolic)
-         VALUES ($1, $2, $3, $4)`,
+           VALUES ($1, $2, $3, $4)`,
       [reading.date, reading.time, reading.systolic, reading.diastolic]
     );
 
@@ -30,8 +26,6 @@ export async function addReading(reading: Reading) {
     );
   } catch (error) {
     console.error("Failed to add reading", error);
-  } finally {
-    client.release();
   }
 }
 
