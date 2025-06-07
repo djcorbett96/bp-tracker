@@ -15,17 +15,20 @@ const database = process.env.DATABASE_URL_PROD || "";
 export async function addReading(reading: Reading) {
   console.log("database", database);
   const sql = neon(database);
-  await sql`CREATE TABLE IF NOT EXISTS readings (
-    id SERIAL PRIMARY KEY,
-    date DATE NOT NULL,
-    time TEXT NOT NULL,
-    systolic INTEGER NOT NULL,
-    diastolic INTEGER NOT NULL
-  )`;
-  await sql`INSERT INTO readings (date, time, systolic, diastolic) VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`;
-  console.log(
-    `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
-  );
+
+  const tx = await sql.begin();
+
+  try {
+    await tx`INSERT INTO readings (date, time, systolic, diastolic) VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`;
+
+    await tx.commit();
+    console.log(
+      `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
+    );
+  } catch (error) {
+    await tx.rollback();
+    console.error("Failed to add reading", error);
+  }
 }
 
 export async function getReadings({
@@ -43,7 +46,9 @@ export async function getReadings({
 
 export async function deleteReading(id: number) {
   const sql = neon(database);
-  await sql`DELETE FROM readings WHERE id = ${id}`;
+
+  await sql.transaction((tx) => [tx`DELETE FROM readings WHERE id = ${id}`]);
+
   revalidatePath("/history");
 }
 
