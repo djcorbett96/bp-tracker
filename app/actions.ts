@@ -1,6 +1,7 @@
 "use server";
 
-import { neon } from "@neondatabase/serverless";
+import { Pool } from "@neondatabase/serverless";
+
 import { revalidatePath } from "next/cache";
 
 type Reading = {
@@ -11,17 +12,28 @@ type Reading = {
 };
 
 const database = process.env.DATABASE_URL_PROD || "";
+const pool = new Pool({ connectionString: database! });
 
 export async function addReading(reading: Reading) {
-  console.log("database", database);
-  const sql = neon(database);
+  console.log("database", process.env.DATABASE_URL);
 
-  await sql`INSERT INTO readings (date, time, systolic, diastolic)
-      VALUES (${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic})`;
+  const client = await pool.connect();
 
-  console.log(
-    `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
-  );
+  try {
+    await client.query(
+      `INSERT INTO readings (date, time, systolic, diastolic)
+         VALUES ($1, $2, $3, $4)`,
+      [reading.date, reading.time, reading.systolic, reading.diastolic]
+    );
+
+    console.log(
+      `Reading added: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
+    );
+  } catch (error) {
+    console.error("Failed to add reading", error);
+  } finally {
+    client.release();
+  }
 }
 
 export async function getReadings({
@@ -31,35 +43,40 @@ export async function getReadings({
   page?: number;
   limit?: number;
 }) {
-  const sql = neon(database);
-  const readings =
-    await sql`SELECT * FROM readings ORDER BY date DESC LIMIT ${limit} OFFSET ${(page - 1) * limit}`;
-  return readings;
+  const offset = (page - 1) * limit;
+
+  const { rows } = await pool.query(
+    `SELECT * FROM readings ORDER BY date DESC LIMIT $1 OFFSET $2`,
+    [limit, offset]
+  );
+
+  return rows;
 }
 
 export async function deleteReading(id: number) {
-  const sql = neon(database);
-
-  await sql.transaction((tx) => [tx`DELETE FROM readings WHERE id = ${id}`]);
+  await pool.query(`DELETE FROM readings WHERE id = $1`, [id]);
 
   revalidatePath("/history");
 }
 
 export async function getLast10Averages(timeOfDay: "AM" | "PM") {
-  const sql = neon(database);
-  const result = await sql`
-    SELECT
-      AVG(systolic) AS avg_systolic,
-      AVG(diastolic) AS avg_diastolic
-    FROM (
-      SELECT systolic, diastolic
-      FROM readings
-      WHERE time = ${timeOfDay}
-      ORDER BY date DESC
-      LIMIT 10
-    ) sub;
-  `;
-  return result[0];
+  const { rows } = await pool.query(
+    `
+      SELECT
+        AVG(systolic) AS avg_systolic,
+        AVG(diastolic) AS avg_diastolic
+      FROM (
+        SELECT systolic, diastolic
+        FROM readings
+        WHERE time = $1
+        ORDER BY date DESC
+        LIMIT 10
+      ) sub;
+      `,
+    [timeOfDay]
+  );
+
+  return rows[0];
 }
 
 export async function getReadingsForChart() {
