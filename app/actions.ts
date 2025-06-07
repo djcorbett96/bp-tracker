@@ -13,6 +13,7 @@ type Reading = {
 const database = process.env.DATABASE_URL_PROD || "";
 
 export async function addReading(reading: Reading) {
+  console.log("database", database);
   const sql = neon(database);
   await sql`CREATE TABLE IF NOT EXISTS readings (
     id SERIAL PRIMARY KEY,
