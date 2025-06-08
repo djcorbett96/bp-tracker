@@ -55,7 +55,7 @@ export async function getReadings({
 }
 
 /** Delete a reading by id for the given user */
-export async function deleteReading(userId: string, id: number) {
+export async function deleteReading(userId: string | undefined, id: number) {
   if (!userId) {
     throw new Error("User ID is required");
   }
