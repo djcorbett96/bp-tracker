@@ -18,19 +18,30 @@ async function getPool() {
 
 /** Add a reading for the given user */
 export async function addReading(userId: string | undefined, reading: Reading) {
+  console.log("addReading params:", {
+    userId,
+    reading,
+  });
+
   if (!userId) {
     throw new Error("User ID is required");
   }
   const pool = await getPool();
-  await pool.query(
-    `INSERT INTO readings (user_id, date, time, systolic, diastolic)
+  try {
+    await pool.query(
+      `INSERT INTO readings (user_id, date, time, systolic, diastolic)
          VALUES ($1, $2, $3, $4, $5)`,
-    [userId, reading.date, reading.time, reading.systolic, reading.diastolic]
-  );
-
-  console.log(
-    `Reading added for user ${userId}: ${reading.date} ${reading.time} ${reading.systolic}/${reading.diastolic}`
-  );
+      [userId, reading.date, reading.time, reading.systolic, reading.diastolic]
+    );
+  } catch (error: any) {
+    console.error("Failed to add reading", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    throw error;
+  }
 }
 
 /** Get paginated readings for the given user */
