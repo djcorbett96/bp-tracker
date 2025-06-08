@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { addReading } from "@/app/actions";
 import { toast } from "sonner";
+import { useUser } from "@stackframe/stack";
 
 const formSchema = z.object({
   systolic: z.preprocess(
@@ -51,6 +52,7 @@ const formSchema = z.object({
 });
 
 export function ReadingForm() {
+  const user = useUser();
   const router = useRouter();
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -63,7 +65,7 @@ export function ReadingForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await addReading(values);
+    await addReading(user?.id, values);
     toast("Reading has been saved", {
       description: `${format(values.date, "MM/dd/yyyy")} ${values.time} ${values.systolic}/${values.diastolic}`,
     });
