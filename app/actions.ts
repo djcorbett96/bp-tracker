@@ -12,7 +12,7 @@ type Reading = {
 
 const database = process.env.DATABASE_URL || "";
 
-export function getPool() {
+async function getPool() {
   return new Pool({ connectionString: database });
 }
 
@@ -21,7 +21,7 @@ export async function addReading(userId: string | undefined, reading: Reading) {
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = getPool();
+  const pool = await getPool();
   await pool.query(
     `INSERT INTO readings (user_id, date, time, systolic, diastolic)
          VALUES ($1, $2, $3, $4, $5)`,
@@ -48,7 +48,7 @@ export async function getReadings({
   }
 
   const offset = (page - 1) * limit;
-  const pool = getPool();
+  const pool = await getPool();
   const { rows } = await pool.query(
     `SELECT * FROM readings WHERE user_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3`,
     [userId, limit, offset]
@@ -62,7 +62,7 @@ export async function deleteReading(userId: string | undefined, id: number) {
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = getPool();
+  const pool = await getPool();
   await pool.query(`DELETE FROM readings WHERE id = $1 AND user_id = $2`, [
     id,
     userId,
@@ -79,7 +79,7 @@ export async function getLast10Averages(
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = getPool();
+  const pool = await getPool();
   const { rows } = await pool.query(
     `
       SELECT
@@ -104,7 +104,7 @@ export async function getReadingsForChart(userId: string) {
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = getPool();
+  const pool = await getPool();
   const { rows } = await pool.query(
     `
       SELECT
