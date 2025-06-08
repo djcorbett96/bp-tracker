@@ -1,6 +1,6 @@
 "use server";
 
-import { Pool } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 
 type Reading = {
@@ -11,10 +11,7 @@ type Reading = {
 };
 
 const database = process.env.DATABASE_URL || "";
-
-async function getPool() {
-  return new Pool({ connectionString: database });
-}
+const sql = neon(database);
 
 /** Add a reading for the given user */
 export async function addReading(userId: string | undefined, reading: Reading) {
@@ -26,13 +23,12 @@ export async function addReading(userId: string | undefined, reading: Reading) {
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = await getPool();
+
   try {
-    await pool.query(
-      `INSERT INTO readings (user_id, date, time, systolic, diastolic)
-         VALUES ($1, $2, $3, $4, $5)`,
-      [userId, reading.date, reading.time, reading.systolic, reading.diastolic]
-    );
+    await sql`
+      INSERT INTO readings (user_id, date, time, systolic, diastolic)
+      VALUES (${userId}, ${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic});
+    `;
   } catch (error: any) {
     console.error("Failed to add reading", {
       message: error.message,
@@ -59,13 +55,24 @@ export async function getReadings({
   }
 
   const offset = (page - 1) * limit;
-  const pool = await getPool();
-  const { rows } = await pool.query(
-    `SELECT * FROM readings WHERE user_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3`,
-    [userId, limit, offset]
-  );
 
-  return rows;
+  try {
+    const rows = await sql`
+      SELECT * FROM readings
+      WHERE user_id = ${userId}
+      ORDER BY date DESC
+      LIMIT ${limit} OFFSET ${offset};
+    `;
+    return rows;
+  } catch (error: any) {
+    console.error("Failed to get readings", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    throw error;
+  }
 }
 
 /** Delete a reading by id for the given user */
@@ -73,13 +80,23 @@ export async function deleteReading(userId: string | undefined, id: number) {
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = await getPool();
-  await pool.query(`DELETE FROM readings WHERE id = $1 AND user_id = $2`, [
-    id,
-    userId,
-  ]);
 
-  revalidatePath("/history");
+  try {
+    await sql`
+      DELETE FROM readings
+      WHERE id = ${id} AND user_id = ${userId};
+    `;
+
+    revalidatePath("/history");
+  } catch (error: any) {
+    console.error("Failed to delete reading", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    throw error;
+  }
 }
 
 /** Get last 10 reading averages (AM or PM) for the given user */
@@ -90,24 +107,32 @@ export async function getLast10Averages(
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = await getPool();
-  const { rows } = await pool.query(
-    `
+
+  try {
+    const rows = await sql`
       SELECT
         AVG(systolic) AS avg_systolic,
         AVG(diastolic) AS avg_diastolic
       FROM (
         SELECT systolic, diastolic
         FROM readings
-        WHERE user_id = $1 AND time = $2
+        WHERE user_id = ${userId} AND time = ${timeOfDay}
         ORDER BY date DESC
         LIMIT 10
       ) sub;
-      `,
-    [userId, timeOfDay]
-  );
+    `;
 
-  return rows[0];
+    // neon() returns rows as array of objects
+    return rows[0];
+  } catch (error: any) {
+    console.error("Failed to get last 10 averages", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    throw error;
+  }
 }
 
 /** Get readings for chart display for the given user */
@@ -115,21 +140,28 @@ export async function getReadingsForChart(userId: string) {
   if (!userId) {
     throw new Error("User ID is required");
   }
-  const pool = await getPool();
-  const { rows } = await pool.query(
-    `
+
+  try {
+    const rows = await sql`
       SELECT
         date,
         time,
         systolic,
         diastolic
       FROM readings
-      WHERE user_id = $1
+      WHERE user_id = ${userId}
       ORDER BY date ASC
-      LIMIT 100
-      `,
-    [userId]
-  );
+      LIMIT 100;
+    `;
 
-  return rows;
+    return rows;
+  } catch (error: any) {
+    console.error("Failed to get readings for chart", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    throw error;
+  }
 }
