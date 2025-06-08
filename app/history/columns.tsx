@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { deleteReading } from "../actions";
 import { toast } from "sonner";
+import { stackServerApp } from "@/stack";
 
 type Reading = {
   id: number;
@@ -22,6 +23,8 @@ type Reading = {
   systolic: number;
   diastolic: number;
 };
+
+const user = await stackServerApp.getUser({ or: "redirect" });
 
 export const columns: ColumnDef<Reading>[] = [
   {
@@ -60,7 +63,7 @@ export const columns: ColumnDef<Reading>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={async () => {
-                await deleteReading(reading.id);
+                await deleteReading(user.id, reading.id);
                 toast("Reading deleted");
               }}
             >
