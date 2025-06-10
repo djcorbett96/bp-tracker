@@ -4,7 +4,6 @@ import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 
 type Reading = {
-  id: number;
   date: Date;
   time: string;
   systolic: number;
