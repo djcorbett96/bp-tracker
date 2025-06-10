@@ -4,6 +4,7 @@ import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 
 type Reading = {
+  id: number;
   date: Date;
   time: string;
   systolic: number;
@@ -57,13 +58,12 @@ export async function getReadings({
   const offset = (page - 1) * limit;
 
   try {
-    const rows = await sql`
+    return await sql`
       SELECT * FROM readings
       WHERE user_id = ${userId}
       ORDER BY date DESC
       LIMIT ${limit} OFFSET ${offset};
     `;
-    return rows;
   } catch (error: any) {
     console.error("Failed to get readings", {
       message: error.message,
@@ -102,7 +102,7 @@ export async function deleteReading(userId: string | undefined, id: number) {
 /** Get last 10 reading averages (AM or PM) for the given user */
 export async function getLast10Averages(
   userId: string,
-  timeOfDay: "AM" | "PM"
+  timeOfDay: "AM" | "PM",
 ) {
   if (!userId) {
     throw new Error("User ID is required");
@@ -142,7 +142,7 @@ export async function getReadingsForChart(userId: string) {
   }
 
   try {
-    const rows = await sql`
+    return await sql`
       SELECT
         date,
         time,
@@ -153,8 +153,6 @@ export async function getReadingsForChart(userId: string) {
       ORDER BY date ASC
       LIMIT 100;
     `;
-
-    return rows;
   } catch (error: any) {
     console.error("Failed to get readings for chart", {
       message: error.message,

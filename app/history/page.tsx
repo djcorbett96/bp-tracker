@@ -9,10 +9,23 @@ import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/navBar";
 import { stackServerApp } from "@/stack";
 
+type Reading = {
+  id: number;
+  date: Date;
+  time: string;
+  systolic: number;
+  diastolic: number;
+};
+
 export default async function Page() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  console.log("baseUrl: ", baseUrl);
+
   const user = await stackServerApp.getUser({ or: "redirect" });
 
-  const readings = await getReadings({ userId: user?.id, page: 1, limit: 25 });
+  const readingsResponse = await fetch(
+    `${baseUrl}/api/readings?userId=${user?.id}&page=1&limit=25`,
+  ).then((res) => res.json());
 
   return (
     <>
@@ -27,7 +40,10 @@ export default async function Page() {
         <h1 className="text-center text-2xl font-bold mb-4">
           Historical Readings
         </h1>
-        <DataTable columns={columns as any} data={readings as any[]} />
+        <DataTable
+          columns={columns as any}
+          data={readingsResponse.readings as any[]}
+        />
       </div>
     </>
   );
