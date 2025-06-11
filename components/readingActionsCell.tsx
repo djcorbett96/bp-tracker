@@ -1,7 +1,6 @@
 "use client";
 
 import { useUser } from "@stackframe/stack";
-import { deleteReading } from "@/app/actions";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -11,8 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function ReadingActionsCell({ readingId }: { readingId: number }) {
+  const router = useRouter();
   const user = useUser();
 
   return (
@@ -26,8 +27,16 @@ export function ReadingActionsCell({ readingId }: { readingId: number }) {
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={async () => {
-            await deleteReading(user?.id, readingId);
-            toast("Reading deleted");
+            try {
+              await fetch("/api/readings", {
+                method: "DELETE",
+                body: JSON.stringify({ readingId: readingId, user: user?.id }),
+              });
+              router.refresh();
+              toast("Reading deleted");
+            } catch (error) {
+              toast("Error deleting reading");
+            }
           }}
         >
           <Trash className="h-4 w-4" />

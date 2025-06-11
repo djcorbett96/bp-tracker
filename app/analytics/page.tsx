@@ -1,6 +1,4 @@
 export const dynamic = "force-dynamic";
-
-import { getLast10Averages, getReadingsForChart } from "@/app/actions";
 import Navbar from "@/components/navBar";
 import { ReadingsLineChart } from "@/components/readingsLineChart";
 import { Button } from "@/components/ui/button";
@@ -16,10 +14,18 @@ import Link from "next/link";
 import { stackServerApp } from "@/stack";
 
 export default async function AnalyticsPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const user = await stackServerApp.getUser({ or: "redirect" });
-  const morningAverages = await getLast10Averages(user.id, "AM");
-  const nightAverages = await getLast10Averages(user.id, "PM");
-  const chartData = await getReadingsForChart(user.id);
+  const morningAverages = await fetch(
+    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=AM`,
+  ).then((res) => res.json());
+  console.log(morningAverages);
+  const nightAverages = await fetch(
+    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=PM`,
+  ).then((res) => res.json());
+  const chartData = await fetch(`${baseUrl}/api/chart?userId=${user?.id}`).then(
+    (res) => res.json(),
+  );
   return (
     <>
       <Navbar />
@@ -43,11 +49,11 @@ export default async function AnalyticsPage() {
               <CardContent className="text-lg">
                 <p>
                   <span className="font-bold">Systolic:</span>{" "}
-                  {Math.round(morningAverages.avg_systolic)}
+                  {Math.round(morningAverages.averages.avg_systolic)}
                 </p>
                 <p>
                   <span className="font-bold">Diastolic:</span>{" "}
-                  {Math.round(morningAverages.avg_diastolic)}
+                  {Math.round(morningAverages.averages.avg_diastolic)}
                 </p>
               </CardContent>
             </Card>
@@ -61,11 +67,11 @@ export default async function AnalyticsPage() {
               <CardContent className="text-lg">
                 <p>
                   <span className="font-bold">Systolic:</span>{" "}
-                  {Math.round(nightAverages.avg_systolic)}
+                  {Math.round(nightAverages.averages.avg_systolic)}
                 </p>
                 <p>
                   <span className="font-bold">Diastolic:</span>{" "}
-                  {Math.round(nightAverages.avg_diastolic)}
+                  {Math.round(nightAverages.averages.avg_diastolic)}
                 </p>
               </CardContent>
             </Card>
@@ -73,7 +79,7 @@ export default async function AnalyticsPage() {
 
           <div className="flex w-full lg:w-2/3">
             <ReadingsLineChart
-              data={chartData.map((row: any) => ({
+              data={chartData?.readings?.map((row: any) => ({
                 date: row.date,
                 time: row.time,
                 systolic: Number(row.systolic),

@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { getReadings } from "@/app/actions";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import Link from "next/link";
@@ -19,8 +18,6 @@ type Reading = {
 
 export default async function Page() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  console.log("baseUrl: ", baseUrl);
-
   const user = await stackServerApp.getUser({ or: "redirect" });
 
   const readingsResponse = await fetch(

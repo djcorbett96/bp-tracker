@@ -12,7 +12,11 @@ export async function GET(request: NextRequest) {
   // const limit = searchParams.get("limit");
 
   if (!userId) {
-    throw new Error("User ID is required");
+    return NextResponse.json({
+      success: false,
+      readings: null,
+      error: "User ID is required",
+    });
   }
 
   // const offset = (page - 1) * limit;
@@ -42,6 +46,70 @@ export async function GET(request: NextRequest) {
 // create reading
 export async function POST(request: NextRequest) {
   const res = await request.json();
-  console.log(res);
-  return Response.json({ res });
+
+  const reading = res.values;
+  const userId = res.user;
+
+  if (!userId) {
+    return NextResponse.json({
+      success: false,
+      readings: null,
+      error: "User ID is required",
+    });
+  }
+
+  try {
+    const newReading = await sql`
+      INSERT INTO readings (user_id, date, time, systolic, diastolic)
+      VALUES (${userId}, ${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic});
+    `;
+    console.log("newReading", newReading);
+    return NextResponse.json({
+      success: true,
+      data: newReading,
+      error: null,
+    });
+  } catch (error: any) {
+    console.error("Failed to get readings", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    return NextResponse.json({ success: false, readings: null, error });
+  }
+}
+// delete reading
+export async function DELETE(request: NextRequest) {
+  const res = await request.json();
+  const readingId = res.readingId;
+  const userId = res.user;
+
+  if (!userId || !readingId) {
+    return NextResponse.json({
+      success: false,
+      readings: null,
+      error: "User ID and Reading ID are required",
+    });
+  }
+
+  try {
+    const deleteResponse = await sql`
+      DELETE FROM readings
+      WHERE id = ${readingId} AND user_id = ${userId};
+    `;
+    return NextResponse.json({
+      success: true,
+      data: deleteResponse,
+      error: null,
+    });
+  } catch (error: any) {
+    console.error("Failed to delete readings", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      error,
+    });
+    return NextResponse.json({ success: false, readings: null, error });
+  }
 }

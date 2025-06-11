@@ -23,7 +23,6 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { addReading } from "@/app/actions";
 import { toast } from "sonner";
 import { useUser } from "@stackframe/stack";
 
@@ -32,19 +31,19 @@ const formSchema = z.object({
     (val) => (val === "" ? undefined : Number(val)),
     z.number({
       required_error: "Systolic is required",
-    })
+    }),
   ),
   diastolic: z.preprocess(
     (val) => (val === "" ? undefined : Number(val)),
     z.number({
       required_error: "Diastolic is required",
-    })
+    }),
   ),
   date: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
     z.date({
       required_error: "Date is required",
-    })
+    }),
   ),
   time: z.enum(["AM", "PM"], {
     required_error: "Time is required",
@@ -65,7 +64,10 @@ export function ReadingForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await addReading(user?.id, values);
+    await fetch("/api/readings", {
+      method: "POST",
+      body: JSON.stringify({ values, user: user?.id }),
+    });
     toast("Reading has been saved", {
       description: `${format(values.date, "MM/dd/yyyy")} ${values.time} ${values.systolic}/${values.diastolic}`,
     });
@@ -88,7 +90,7 @@ export function ReadingForm() {
                       variant={"outline"}
                       className={cn(
                         "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? (
@@ -137,7 +139,7 @@ export function ReadingForm() {
                         "flex-1 cursor-pointer rounded-none border border-input px-3 py-2 text-sm font-medium ring-offset-background transition-colors",
                         option === "AM" && "rounded-l-md",
                         option === "PM" && "rounded-r-md border-l-0",
-                        "bg-background hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        "bg-background hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
                       )}
                     >
                       {option === "AM" ? "Morning" : "Night"}
@@ -166,7 +168,9 @@ export function ReadingForm() {
                   }
                   onChange={(e) =>
                     field.onChange(
-                      e.target.value === "" ? undefined : Number(e.target.value)
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
                     )
                   }
                 />
@@ -192,7 +196,9 @@ export function ReadingForm() {
                   }
                   onChange={(e) =>
                     field.onChange(
-                      e.target.value === "" ? undefined : Number(e.target.value)
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
                     )
                   }
                 />
