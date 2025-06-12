@@ -48,6 +48,9 @@ const formSchema = z.object({
   time: z.enum(["AM", "PM"], {
     required_error: "Time is required",
   }),
+  arm: z.enum(["L", "R"], {
+    required_error: "Arm is required",
+  }),
 });
 
 export function ReadingForm() {
@@ -60,6 +63,7 @@ export function ReadingForm() {
       diastolic: 80,
       date: undefined,
       time: "PM",
+      arm: "L",
     },
   });
 
@@ -69,7 +73,7 @@ export function ReadingForm() {
       body: JSON.stringify({ values, user: user?.id }),
     });
     toast("Reading has been saved", {
-      description: `${format(values.date, "MM/dd/yyyy")} ${values.time} ${values.systolic}/${values.diastolic}`,
+      description: `${format(values.date, "MM/dd/yyyy")} ${values.time} ${values.arm} ${values.systolic}/${values.diastolic}`,
     });
     router.push("/");
   }
@@ -143,6 +147,39 @@ export function ReadingForm() {
                       )}
                     >
                       {option === "AM" ? "Morning" : "Night"}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="arm"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Arm</FormLabel>
+              <FormControl>
+                <ToggleGroup
+                  type="single"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="flex flex-row gap-0 w-full"
+                >
+                  {["L", "R"].map((option) => (
+                    <ToggleGroupItem
+                      key={option}
+                      value={option}
+                      className={cn(
+                        "flex-1 cursor-pointer rounded-none border border-input px-3 py-2 text-sm font-medium ring-offset-background transition-colors",
+                        option === "L" && "rounded-l-md",
+                        option === "R" && "rounded-r-md border-l-0",
+                        "bg-background hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+                      )}
+                    >
+                      {option === "L" ? "Left" : "Right"}
                     </ToggleGroupItem>
                   ))}
                 </ToggleGroup>

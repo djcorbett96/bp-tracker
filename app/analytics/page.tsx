@@ -16,12 +16,17 @@ import { stackServerApp } from "@/stack";
 export default async function AnalyticsPage() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const user = await stackServerApp.getUser({ or: "redirect" });
-  const morningAverages = await fetch(
-    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=AM`,
+  const morningAveragesLeft = await fetch(
+    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=AM&arm=L`,
   ).then((res) => res.json());
-  console.log(morningAverages);
-  const nightAverages = await fetch(
-    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=PM`,
+  const morningAveragesRight = await fetch(
+    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=AM&arm=R`,
+  ).then((res) => res.json());
+  const nightAveragesLeft = await fetch(
+    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=PM&arm=L`,
+  ).then((res) => res.json());
+  const nightAveragesRight = await fetch(
+    `${baseUrl}/api/averages?userId=${user?.id}&timeOfDay=PM&arm=R`,
   ).then((res) => res.json());
   const chartData = await fetch(`${baseUrl}/api/chart?userId=${user?.id}`).then(
     (res) => res.json(),
@@ -46,15 +51,15 @@ export default async function AnalyticsPage() {
                 </CardTitle>
                 <CardDescription>Average of last 10 readings</CardDescription>
               </CardHeader>
-              <CardContent className="text-lg">
-                <p>
-                  <span className="font-bold">Systolic:</span>{" "}
-                  {Math.round(morningAverages.averages.avg_systolic)}
-                </p>
-                <p>
-                  <span className="font-bold">Diastolic:</span>{" "}
-                  {Math.round(morningAverages.averages.avg_diastolic)}
-                </p>
+              <CardContent className="text-lg flex gap-2">
+                <div className="flex flex-col gap-2 w-1/2 rounded-md border border-primary/20 p-2 bg-primary/10 text-primary/90">
+                  <p className="font-bold">Left Arm: </p>
+                  <p>{`${Math.round(morningAveragesLeft.averages.avg_systolic)} / ${Math.round(morningAveragesLeft.averages.avg_diastolic)} `}</p>
+                </div>
+                <div className="flex flex-col gap-2 w-1/2 rounded-md border border-primary/20 p-2 bg-primary/10 text-primary/90">
+                  <p className="font-bold">Right Arm: </p>
+                  <p>{`${Math.round(morningAveragesRight.averages.avg_systolic)} / ${Math.round(morningAveragesRight.averages.avg_diastolic)} `}</p>
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -64,15 +69,15 @@ export default async function AnalyticsPage() {
                 </CardTitle>
                 <CardDescription>Average of last 10 readings</CardDescription>
               </CardHeader>
-              <CardContent className="text-lg">
-                <p>
-                  <span className="font-bold">Systolic:</span>{" "}
-                  {Math.round(nightAverages.averages.avg_systolic)}
-                </p>
-                <p>
-                  <span className="font-bold">Diastolic:</span>{" "}
-                  {Math.round(nightAverages.averages.avg_diastolic)}
-                </p>
+              <CardContent className="text-lg flex gap-2">
+                <div className="flex flex-col gap-2 w-1/2 rounded-md border border-primary/20 p-2 bg-primary/10 text-primary/90">
+                  <p className="font-bold">Left Arm: </p>
+                  <p>{`${Math.round(nightAveragesLeft.averages.avg_systolic)} / ${Math.round(nightAveragesLeft.averages.avg_diastolic)} `}</p>
+                </div>
+                <div className="flex flex-col gap-2 w-1/2 rounded-md border border-primary/20 p-2 bg-primary/10 text-primary/90">
+                  <p className="font-bold">Right Arm: </p>
+                  <p>{`${Math.round(nightAveragesRight.averages.avg_systolic)} / ${Math.round(nightAveragesRight.averages.avg_diastolic)} `}</p>
+                </div>
               </CardContent>
             </Card>
           </div>

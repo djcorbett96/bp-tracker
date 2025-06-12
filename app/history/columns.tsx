@@ -7,6 +7,7 @@ type Reading = {
   id: number;
   date: string;
   time: string;
+  arm: string;
   systolic: number;
   diastolic: number;
 };
@@ -23,6 +24,10 @@ export const columns: ColumnDef<Reading>[] = [
   {
     accessorKey: "time",
     header: "Time",
+  },
+  {
+    accessorKey: "arm",
+    header: "Arm",
   },
   {
     accessorKey: "systolic",

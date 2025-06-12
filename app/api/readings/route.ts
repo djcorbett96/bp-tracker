@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const newReading = await sql`
-      INSERT INTO readings (user_id, date, time, systolic, diastolic)
-      VALUES (${userId}, ${reading.date}, ${reading.time}, ${reading.systolic}, ${reading.diastolic});
+      INSERT INTO readings (user_id, date, time, arm, systolic, diastolic)
+      VALUES (${userId}, ${reading.date}, ${reading.time}, ${reading.arm}, ${reading.systolic}, ${reading.diastolic});
     `;
     console.log("newReading", newReading);
     return NextResponse.json({

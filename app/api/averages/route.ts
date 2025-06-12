@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const userId = searchParams.get("userId");
   const timeOfDay = searchParams.get("timeOfDay");
+  const arm = searchParams.get("arm");
 
   if (!userId || !timeOfDay) {
     return NextResponse.json({
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
       FROM (
              SELECT systolic, diastolic
              FROM readings
-             WHERE user_id = ${userId} AND time = ${timeOfDay}
+             WHERE user_id = ${userId} AND time = ${timeOfDay} AND arm = ${arm}
              ORDER BY date DESC
                LIMIT 10
            ) sub;
